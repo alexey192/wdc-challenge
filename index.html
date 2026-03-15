@@ -1,0 +1,974 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<style>
+:root{
+  --wz-navy:#06038D;
+  --wz-magenta:#C6007E;
+  --wz-blue:#01A0DF;
+  --wz-concrete:#F2F2F2;
+  --wz-surface:#FFFFFF;
+  --wz-surface-2:#FAFAFC;
+  --wz-line:#E6E6EE;
+  --wz-line-strong:#D8D8E2;
+  --wz-text:#1D1D33;
+  --wz-text-2:#66667F;
+  --wz-text-3:#9797AE;
+  --wz-success:#0E9A6C;
+  --wz-gold:#D89A00;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#fff;color:var(--wz-text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,input{font:inherit}
+.wz-wrap{display:flex;justify-content:center;padding:2rem 0;background:#fff}
+.wz-phone{width:375px;background:var(--wz-surface);border-radius:46px;border:10px solid #111;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 28px 72px rgba(20,20,38,.20)}
+
+/* ── CHROME ── */
+.wz-status{background:var(--wz-navy);padding:14px 24px 6px;display:flex;justify-content:space-between;align-items:center;position:relative}
+.wz-notch{width:126px;height:32px;background:#111;border-radius:20px;position:absolute;left:50%;transform:translateX(-50%)}
+.wz-appbar{background:var(--wz-navy);padding:8px 16px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.08)}
+.wz-logo{font-size:18px;font-weight:900;color:#fff;letter-spacing:-0.02em}
+.wz-logo .wi{color:var(--wz-magenta)}
+.wz-logo .sub{font-size:12px;font-weight:500;color:rgba(255,255,255,0.55);letter-spacing:0.5px;margin-left:4px}
+.wz-screen{height:555px;overflow-y:auto;background:var(--wz-surface-2)}
+#sc-visas .vp-pg{min-height:160px}
+#sc-visas .visa-card{height:74px;display:flex;flex-direction:column;justify-content:space-between}
+#sc-visas .vc-body{flex:1}
+.id-stat-val{font-size:16px!important}
+.wz-screen::-webkit-scrollbar{width:4px}
+.wz-screen::-webkit-scrollbar-thumb{background:#d8d8e3;border-radius:8px}
+.wz-nav{background:var(--wz-surface);border-top:1px solid var(--wz-line);display:grid;grid-template-columns:repeat(4,1fr);padding:7px 0 14px}
+.nav-tab{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0}
+.nav-tab .ni{width:22px;height:22px}
+.nav-tab .nl{font-size:10px;font-weight:700;color:#9a9ab0}
+.nav-tab.active .nl{color:var(--wz-magenta)}
+.sc{padding:18px 16px;display:none}
+.sc.active{display:block}
+.page-title{font-size:22px;font-weight:900;color:var(--wz-navy);margin-bottom:10px;letter-spacing:-.02em}
+.page-sub{font-size:12px;color:var(--wz-text-3);margin-bottom:16px}
+.section-title{font-size:15px;font-weight:800;color:var(--wz-navy);margin-bottom:10px}
+.si{position:relative;height:555px;overflow:hidden}
+
+/* ── PLAN CARDS ── */
+.plan-card{background:var(--wz-surface);border-radius:18px;border:1px solid var(--wz-line);padding:16px;margin-bottom:12px;position:relative;overflow:hidden}
+.plan-card.std-feat{border:1.5px solid #C8D6F8}
+.plan-card.premium{background:var(--wz-navy);border:none}
+.plan-corner{position:absolute;top:0;right:0;border-radius:0 16px 0 10px;padding:4px 11px;font-size:9px;font-weight:800;letter-spacing:.5px}
+.plan-price{font-size:28px;font-weight:900;color:var(--wz-navy);letter-spacing:-.03em}
+.plan-price.on-dark{color:#fff}
+.plan-price .per{font-size:12px;font-weight:500;color:#9494ab}
+.plan-price.on-dark .per{color:rgba(255,255,255,0.45)}
+.plan-row{font-size:12px;color:var(--wz-text-2);line-height:1.95}
+.plan-row.on-dark{color:rgba(255,255,255,0.65)}
+.c-blue{color:var(--wz-blue);font-weight:800}
+.c-navy{color:var(--wz-navy);font-weight:800}
+.c-cross{color:#c9c9d5}
+.plan-btn{width:100%;border:none;border-radius:14px;padding:12px 14px;font-size:14px;font-weight:800;cursor:pointer}
+.btn-blue{background:var(--wz-blue);color:#fff}
+.btn-navy{background:var(--wz-navy);color:#fff}
+.btn-pink{background:var(--wz-magenta);color:#fff}
+.btn-white{background:#fff;color:var(--wz-navy)}
+.btn-outline{background:var(--wz-surface);border:1.5px solid var(--wz-line-strong);color:var(--wz-navy);border-radius:14px;padding:13px;font-size:13px;font-weight:700;cursor:pointer;width:100%}
+
+/* ── ID CARD ── */
+.id-card{border-radius:20px;margin-bottom:16px;overflow:hidden;border:1px solid var(--wz-line)}
+.id-top{background:var(--wz-navy);padding:12px 14px 11px;display:flex;align-items:center;justify-content:space-between}
+.id-logo-text{font-size:16px;font-weight:900;color:#fff;letter-spacing:-0.5px}
+.id-logo-text .wi{color:var(--wz-magenta)}
+.id-type-badge{background:var(--wz-magenta);border-radius:999px;padding:4px 12px;font-size:9px;font-weight:900;color:#fff;letter-spacing:1.5px}
+.id-body{background:var(--wz-surface);padding:14px}
+.id-main{display:flex;gap:13px;align-items:flex-start;margin-bottom:12px}
+.id-photo{width:62px;height:78px;border-radius:10px;background:#E3E3EC;flex-shrink:0;border:1px solid #D2D2DE;overflow:hidden}
+.id-label{font-size:8px;font-weight:800;color:#A1A1B7;letter-spacing:1.2px;margin-bottom:2px;text-transform:uppercase}
+.id-value{font-size:13px;font-weight:800;color:var(--wz-navy);line-height:1.2}
+.id-value.sm{font-size:11px}
+.id-divider{border-top:1px solid var(--wz-line);margin:10px 0}
+.id-stats{display:grid;grid-template-columns:repeat(3,1fr)}
+.id-stat{display:flex;flex-direction:column;align-items:center;padding:6px 4px}
+.id-stat+.id-stat{border-left:1px solid var(--wz-line)}
+.id-stat-val{font-size:18px;font-weight:900;color:var(--wz-navy);line-height:1}
+.id-stat-val.pink{color:var(--wz-magenta)}
+.id-stat-lbl{font-size:9px;color:#9e9eb4;margin-top:4px;font-weight:600}
+.id-bottom{background:#FAFAFC;border-top:1px solid var(--wz-line);padding:8px 14px}
+.id-mrz{font-family:ui-monospace,monospace;font-size:6.5px;color:#B3B3C5;letter-spacing:1px;line-height:1.8}
+
+/* ── PASSPORT SPREAD ── */
+.pp-viewer{border-radius:18px;overflow:hidden;margin-bottom:6px;border:1px solid var(--wz-line)}
+.pp-spread{display:none}
+.pp-spread.active{display:flex;flex-direction:column}
+.pp-hdr{background:var(--wz-navy);padding:8px 12px;display:flex;justify-content:space-between;align-items:center}
+.pp-hdr-logo{font-size:10px;font-weight:900;color:#fff;letter-spacing:-0.3px}
+.pp-hdr-logo .wi{color:var(--wz-magenta)}
+.pp-pages{display:grid;grid-template-columns:1fr 1fr;position:relative}
+.pp-page{position:relative;min-height:180px;overflow:hidden}
+.pp-page-left{background:#FFFDFC}
+.pp-page-right{background:#FFFDFC}
+.pp-page-left::before,.pp-page-right::before{content:'';position:absolute;inset:24px 0 24px 0;background:repeating-linear-gradient(to bottom,transparent 0,transparent 18px,rgba(0,0,0,0.05) 18px,rgba(0,0,0,0.05) 19px);pointer-events:none;z-index:0}
+.pp-spine{position:absolute;left:50%;top:0;bottom:0;width:1px;background:#ECECF3;z-index:2;transform:translateX(-50%)}
+.pp-footer{background:#FAFAFC;border-top:1px solid var(--wz-line);padding:6px 12px;display:flex;justify-content:space-between;align-items:center}
+.pp-footer-mrz{font-family:ui-monospace,monospace;font-size:5.5px;color:#B3B3C5;letter-spacing:0.8px}
+.pp-footer-num{font-family:ui-monospace,monospace;font-size:7px;color:#9A9AAF;font-weight:800;letter-spacing:1px}
+.stmp{position:absolute;display:flex;flex-direction:column;align-items:center;z-index:1}
+.stmp-oval{border-radius:50%;border:2px solid;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.stmp-rect{border:2px solid;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.pp-controls{display:flex;align-items:center;justify-content:space-between;padding:10px 4px 4px}
+.pp-arr{background:var(--wz-surface);border:1px solid var(--wz-line);border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.pp-arr:disabled{opacity:.35;cursor:default}
+.pp-dots{display:flex;gap:6px;align-items:center}
+.pp-dot{width:6px;height:6px;border-radius:50%;background:#D8D8E3;cursor:pointer;transition:all .2s}
+.pp-dot.active{background:var(--wz-navy);width:18px;border-radius:999px}
+
+/* ── MAP ── */
+.map-box{background:var(--wz-surface);border-radius:18px;border:1px solid var(--wz-line);overflow:hidden;margin-bottom:14px}
+.map-hdr{padding:12px 12px 8px;display:flex;justify-content:space-between;align-items:center}
+#leaflet-map{height:168px;width:100%}
+.leaflet-container{background:#D9F1FB!important}
+.leaflet-control-zoom,.leaflet-control-attribution{display:none!important}
+
+/* ── VISA PAGES (passport-style ticket cards) ── */
+.vp-stack{display:flex;flex-direction:column;gap:10px}
+.vp-spread-v{border-radius:16px;overflow:hidden;border:1px solid var(--wz-line)}
+.vp-pg{position:relative;background:#FFFDFC;overflow:hidden;min-height:120px}
+.vp-pg::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(to bottom,transparent 0,transparent 18px,rgba(0,0,0,0.045) 18px,rgba(0,0,0,0.045) 19px);pointer-events:none;z-index:0}
+.vp-pgn{position:absolute;bottom:8px;right:12px;font-family:ui-monospace,monospace;font-size:44px;font-weight:900;color:rgba(6,3,141,0.07);user-select:none;z-index:0;line-height:1}
+.visa-card{position:relative;margin:12px 12px 10px;border-radius:10px;overflow:hidden;cursor:pointer;z-index:2;transition:transform .12s}
+.visa-card:active{transform:scale(0.97)}
+.visa-card+.visa-card{margin-top:0}
+.vc-body{padding:11px 14px 8px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.vc-discount{font-size:24px;font-weight:900;color:#fff;line-height:1;letter-spacing:-1px}
+.vc-name{font-size:9px;font-weight:800;color:rgba(255,255,255,0.76);margin-top:3px}
+.vc-right{text-align:right;flex-shrink:0}
+.vc-exp-lbl{font-size:7px;font-weight:800;color:rgba(255,255,255,0.45);letter-spacing:1.5px;text-transform:uppercase}
+.vc-exp-val{font-size:10px;font-weight:800;color:rgba(255,255,255,0.9);margin-top:2px}
+.vc-perf{height:1px;background:repeating-linear-gradient(90deg,rgba(255,255,255,0.35) 0,rgba(255,255,255,0.35) 4px,transparent 4px,transparent 8px);margin:0 10px}
+.vc-footer{padding:5px 14px 8px;display:flex;justify-content:space-between;align-items:center}
+.vc-logo{font-size:8px;font-weight:900;color:rgba(255,255,255,0.48);letter-spacing:-0.3px}
+.vc-logo .wi{color:rgba(255,255,255,0.72)}
+.vc-hint{font-size:7px;color:rgba(255,255,255,0.4);font-weight:600}
+.vc-navy{background:var(--wz-navy)}
+.vc-pink{background:var(--wz-magenta)}
+.vc-blue{background:var(--wz-blue)}
+.vc-teal{background:var(--wz-success)}
+.vc-gold{background:var(--wz-gold)}
+
+/* ── PROMO POPUP ── */
+.promo-popup{display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(10,8,30,0.72);z-index:30;align-items:center;justify-content:center}
+.promo-popup.show{display:flex}
+.promo-box{background:#fff;border-radius:20px;padding:22px 22px 18px;width:248px;text-align:center}
+.promo-title{font-size:10px;font-weight:800;color:#A2A2B6;letter-spacing:1.8px;text-transform:uppercase;margin-bottom:6px}
+.promo-name{font-size:15px;font-weight:900;color:var(--wz-navy);margin-bottom:2px;line-height:1.3}
+.promo-disc{font-size:40px;font-weight:900;color:var(--wz-magenta);line-height:1;letter-spacing:-2px;margin:8px 0}
+.promo-code-wrap{background:#F7F7FB;border:1.5px dashed #D5D5E0;border-radius:12px;padding:10px 16px;margin:10px 0 4px}
+.promo-code{font-family:ui-monospace,monospace;font-size:20px;font-weight:900;color:var(--wz-navy);letter-spacing:3px}
+.promo-copy{font-size:10px;color:var(--wz-magenta);font-weight:800;margin-top:5px;cursor:pointer}
+.promo-valid{font-size:10px;color:#A5A5BA;margin-top:10px}
+.promo-close{margin-top:14px;background:var(--wz-navy);color:#fff;border:none;border-radius:12px;padding:11px;font-size:13px;font-weight:800;cursor:pointer;width:100%}
+
+/* ── SHOP — NEW PACK CARDS ── */
+.pack-card-new{border-radius:18px;margin-bottom:12px;cursor:pointer;overflow:hidden;border:1px solid var(--wz-line);transition:transform .12s;position:relative}
+.pack-card-new:active{transform:scale(0.985)}
+.pc-starter{background:var(--wz-surface)}
+.pc-explorer{background:#FBFEFF;border:1.5px solid #BFE4F3}
+.pc-family{background:#FFF8F0;border:1.5px solid #F5D5B0}
+.pc-backpacker{background:#F0F2FF;border:1.5px solid #C0C8F0}
+.pc-christmas{background:#F0FBF4;border:1.5px solid #A8DFB8}
+.pc-pro{background:var(--wz-navy);border:none}
+.pc-badge{position:absolute;top:14px;right:14px;font-size:8px;font-weight:900;letter-spacing:1px;padding:4px 9px;border-radius:999px;text-transform:uppercase}
+.pc-badge-pop{background:var(--wz-magenta);color:#fff}
+.pc-badge-best{background:var(--wz-blue);color:#fff}
+.pc-badge-new{background:var(--wz-success);color:#fff}
+.pc-body{padding:16px 16px 10px;display:flex;align-items:center;gap:14px}
+.pc-count-block{flex-shrink:0;text-align:center;width:52px}
+.pc-count-num{font-size:44px;font-weight:900;line-height:1;letter-spacing:-2px;color:var(--wz-navy)}
+.pc-count-num-w{color:#fff}
+.pc-count-lbl{font-size:8px;font-weight:800;letter-spacing:1.5px;color:#A0A0B5;text-transform:uppercase;margin-top:1px}
+.pc-count-lbl-w{color:rgba(255,255,255,0.5)}
+.pc-sep{width:1px;height:52px;background:var(--wz-line);flex-shrink:0}
+.pc-sep-w{background:rgba(255,255,255,0.15)}
+.pc-right{flex:1;display:flex;flex-direction:column;gap:8px}
+.pc-name{font-size:15px;font-weight:900;color:var(--wz-navy);line-height:1}
+.pc-name-w{color:#fff}
+.pc-slots{display:flex;gap:5px;flex-wrap:wrap}
+.pc-slot{width:28px;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.pc-slot-pick{background:#EEF9FD;border:1.5px solid #8FD2ED}
+.pc-slot-rand{background:#F5F5F9;border:1.5px dashed #C9C9D8}
+.pc-slot-pick-orange{background:#FFF0E0;border:1.5px solid #F5C488}
+.pc-slot-pick-indigo{background:#E8ECFF;border:1.5px solid #9AAAE8}
+.pc-slot-pick-green{background:#E8F9EE;border:1.5px solid #88D0A0}
+.pc-slot-pick-w{background:rgba(255,255,255,0.12);border:1.5px solid rgba(255,255,255,0.3);color:#fff}
+.pc-slot-rand-w{background:rgba(255,255,255,0.05);border:1.5px dashed rgba(255,255,255,0.18);color:rgba(255,255,255,0.45)}
+.pc-footer{padding:0 16px 13px;display:flex;align-items:center;justify-content:space-between}
+.pc-legend{display:flex;gap:10px}
+.pc-leg-item{display:flex;align-items:center;gap:4px;font-size:9px;font-weight:700;color:#9FA0B5}
+.pc-leg-item-w{color:rgba(255,255,255,0.45)}
+.pc-leg-dot{width:8px;height:10px;border-radius:2px}
+.pc-price{font-size:20px;font-weight:900;color:var(--wz-navy);letter-spacing:-0.5px}
+.pc-price-w{color:#fff}
+
+/* ── SHOP BANNER ── */
+.shop-banner{background:var(--wz-navy);border-radius:16px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+
+/* ── PICKER ── */
+.pw{display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:var(--wz-surface-2);z-index:10;overflow-y:auto;padding:16px}
+.pw.show{display:block;animation:su .25s ease}
+@keyframes su{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+.ph{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.bb{background:none;border:none;cursor:pointer;padding:4px;display:flex;align-items:center}
+.pbar{background:#EAEAF2;border-radius:999px;height:6px;overflow:hidden;margin:10px 0 14px}
+.pfill{background:var(--wz-navy);height:100%;border-radius:999px;transition:width .3s}
+.vo{background:var(--wz-surface);border-radius:16px;border:1.5px solid var(--wz-line);padding:13px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.vo.sel{border-color:var(--wz-navy);background:#F5F5FC}
+.vo.lck{opacity:.45;cursor:default}
+.vo-chk{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--wz-line);display:flex;align-items:center;justify-content:center;margin-left:auto;flex-shrink:0;background:#fff}
+.vo-chk.on{background:var(--wz-navy);border-color:var(--wz-navy)}
+.cbar{background:rgba(255,255,255,.95);border-top:1px solid var(--wz-line);padding:12px 16px;position:sticky;bottom:0;margin:0 -16px -16px}
+.cbtn{width:100%;background:var(--wz-magenta);color:#fff;border:none;border-radius:14px;padding:13px;font-size:14px;font-weight:800;cursor:pointer}
+.cbtn:disabled{opacity:.42;cursor:default}
+
+/* ── ENVELOPE ── */
+.env-overlay{display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(10,8,30,.90);z-index:20;overflow:hidden;align-items:center;justify-content:center;flex-direction:column}
+.env-overlay.show{display:flex}
+.envelope{position:relative;width:180px;height:120px;cursor:pointer;perspective:600px}
+.env-body{position:absolute;inset:0;background:#1B2082;border-radius:8px;border:1.5px solid rgba(198,0,126,.45)}
+.env-flap{
+  position:absolute;top:0;left:0;right:0;height:68px;
+  background:#111873;
+  border-radius:8px 8px 0 0;
+  border-bottom:1.5px solid rgba(198,0,126,.3);
+  transform-origin:top center;
+  transition:transform .65s cubic-bezier(.4,0,.2,1);
+  clip-path:polygon(0 0,100% 0,100% 65%,50% 100%,0 65%)
+}
+.env-flap.open{transform:rotateX(-160deg)}
+.env-seal{position:absolute;top:22px;left:50%;transform:translateX(-50%);width:32px;height:32px;background:var(--wz-magenta);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#fff;letter-spacing:-0.5px;transition:opacity .3s}
+.env-seal.hidden{opacity:0}
+.env-hint{color:rgba(255,255,255,0.46);font-size:11px;font-weight:700;letter-spacing:1px;margin-top:16px;text-transform:uppercase}
+.cards-stage{display:none;flex-direction:column;align-items:center;width:100%;padding:0 16px}
+.cards-stage.show{display:flex}
+.cards-row{display:flex;gap:8px;justify-content:center;margin-bottom:12px;flex-wrap:wrap}
+.reveal-card{width:80px;height:112px;perspective:400px;cursor:pointer;flex-shrink:0}
+.rc-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1)}
+.rc-inner.flipped{transform:rotateY(180deg)}
+.rc-front,.rc-back{position:absolute;inset:0;border-radius:10px;backface-visibility:hidden}
+.rc-front{background:#1B2082;border:1.5px solid rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center}
+.rc-front-logo{font-size:18px;font-weight:900;color:#fff;letter-spacing:-0.5px}
+.rc-front-logo .wi{color:var(--wz-magenta)}
+.rc-back{background:#fff;border:1.5px solid var(--wz-line);transform:rotateY(180deg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 6px}
+.rc-back.random{background:#FFF6FA;border-color:#F2BDD8}
+.rc-back-amt{font-size:16px;font-weight:900;line-height:1;margin-bottom:2px}
+.rc-back-name{font-size:8px;font-weight:800;color:#555;text-align:center;line-height:1.3}
+.rc-back-tag{font-size:7px;font-weight:900;letter-spacing:0.8px;padding:2px 5px;border-radius:4px;margin-top:5px}
+.rc-back-icon{margin-bottom:4px}
+.cards-btn{background:var(--wz-magenta);color:#fff;border:none;border-radius:14px;padding:12px 28px;font-size:14px;font-weight:800;cursor:pointer;margin-top:4px}
+</style>
+
+<div class="wz-wrap"><div class="wz-phone">
+
+<div class="wz-status">
+  <span style="color:#fff;font-size:13px;font-weight:600;z-index:2;position:relative">9:41</span>
+  <div class="wz-notch"></div>
+  <div style="z-index:2;position:relative;display:flex;align-items:center;gap:5px">
+    <svg width="17" height="12" viewBox="0 0 17 12" fill="none"><rect x="0" y="5" width="3" height="7" rx="1" fill="white" opacity=".4"/><rect x="4.5" y="3" width="3" height="9" rx="1" fill="white" opacity=".65"/><rect x="9" y="1" width="3" height="11" rx="1" fill="white" opacity=".85"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="white"/></svg>
+    <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 3C10.3 3 12.4 4 13.8 5.6L15.2 4C13.4 1.9 10.9.5 8 .5 5.1.5 2.6 1.9.8 4l1.4 1.6C3.6 4 5.7 3 8 3z" fill="white" opacity=".4"/><path d="M8 5.8c1.6 0 3 .7 4 1.7L13.4 6.1C12 4.8 10.1 4 8 4s-4 .8-5.4 2.1L4 7.5C5 6.5 6.4 5.8 8 5.8z" fill="white" opacity=".7"/><path d="M8 8.6c.9 0 1.8.4 2.4.9L11.8 8.1C10.8 7.3 9.5 6.8 8 6.8s-2.8.5-3.8 1.3l1.4 1.4C6.2 9 7.1 8.6 8 8.6z" fill="white"/><circle cx="8" cy="11" r="1.1" fill="white"/></svg>
+    <svg viewBox="0 0 26 13" width="26" height="13" fill="none"><rect x=".5" y=".5" width="22" height="12" rx="3" stroke="white" stroke-width="1" opacity=".5"/><rect x="23" y="4" width="2.5" height="5" rx="1.25" fill="white" opacity=".5"/><rect x="1.5" y="1.5" width="17" height="10" rx="2" fill="white"/></svg>
+  </div>
+</div>
+
+<div class="wz-appbar">
+  <div style="display:flex;align-items:center;gap:8px">
+    <svg xmlns="http://www.w3.org/2000/svg" width="44" height="22" viewBox="0 0 90 45" fill="#fff"><path d="M65.901,16.54h8.597L64.316,29.86h-8.601L65.901,16.54z M65.254,15.239L54.431,29.402c-0.259,0.338-0.301,0.765-0.112,1.142c0.183,0.373,0.57,0.615,0.98,0.615h9.662l10.911-14.271c0.238-0.32,0.273-0.735,0.103-1.085c-0.175-0.349-0.53-0.564-0.93-0.564L65.254,15.239L65.254,15.239z M34.345,8.316C34.4,8.222,34.504,8.16,34.619,8.16h5.638l0.81-4.655c0.027-0.144,0.154-0.246,0.305-0.246l5.277-0.004c0.097,0,0.175,0.029,0.231,0.092c0.058,0.072,0.086,0.168,0.073,0.253l-0.525,3.012l24.808,0.018c0.134,0,0.23,0.081,0.277,0.159c0.029,0.058,0.068,0.175-0.013,0.285l-2.24,2.925l18.386-0.005c0.107,0,0.183,0.068,0.214,0.127c0.029,0.043,0.053,0.133-0.002,0.216L72.577,30.344c-0.174,0.218-0.166,0.772-0.045,1.008c0.126,0.238,0.562,0.578,0.835,0.578l10.748,0.012c0.125,0,0.198,0.064,0.231,0.103c0.058,0.067,0.084,0.157,0.07,0.244l-0.817,4.675c-0.026,0.142-0.154,0.245-0.305,0.245H42.401l-0.672-0.004c0.05,0.231,0.07,0.472,0.07,0.717c0,2.103-1.704,3.808-3.81,3.808c-2.105,0-3.81-1.705-3.81-3.808c0-2.104,1.705-3.807,3.81-3.807c1.437,0,2.69,0.796,3.342,1.972l16.666-21.85c0.268-0.564,0.134-0.766-0.01-1.099c-0.107-0.251-0.509-0.509-0.948-0.504H45.373l-2.981,17.022c-0.029,0.134-0.157,0.227-0.3,0.227h-5.28c-0.123,0-0.198-0.066-0.233-0.105c-0.032-0.038-0.09-0.123-0.068-0.244l3.238-18.476L26.579,36.878c-0.118,0.207-0.338,0.341-0.585,0.341l-4.486,0.022c-0.16,0-0.292-0.114-0.306-0.251l-1.237-18.756l-9.73,18.648c-0.116,0.205-0.341,0.339-0.582,0.339l-4.55-0.003c-0.156,0-0.289-0.115-0.302-0.263L1.835,8.485c-0.007-0.09,0.024-0.177,0.077-0.237c0.055-0.055,0.135-0.086,0.23-0.086h6.116c0.167,0,0.307,0.136,0.307,0.314l0.917,18.574l8.994-18.728c0.049-0.097,0.157-0.16,0.272-0.16l5.575-0.024c0.154,0,0.292,0.117,0.301,0.253l0.906,18.717L34.345,8.316z M41.112,1.955c-0.63,0-1.165,0.45-1.278,1.074l-0.672,3.828H34.42c-0.484,0-0.917,0.261-1.163,0.713L26.581,21.81L25.919,8.044c-0.057-0.667-0.621-1.186-1.295-1.186h-6.07c-0.485,0-0.932,0.27-1.163,0.716l-6.864,14.293L9.85,8.155c0-0.716-0.584-1.297-1.298-1.297H1.8c-0.369,0-0.711,0.144-0.959,0.405c-0.24,0.264-0.362,0.631-0.338,1.013L3.53,37.353c0.073,0.658,0.628,1.155,1.293,1.155l5.019,0.002c0.616,0,1.177-0.336,1.467-0.882l7.665-14.685l0.945,14.411c0.076,0.658,0.63,1.155,1.29,1.155l4.982,0.002c0.613,0,1.18-0.34,1.469-0.889l9.315-18.263l-1.804,10.301c-0.068,0.379,0.038,0.765,0.282,1.065c0.246,0.292,0.61,0.462,0.994,0.462h5.904c0.613,0,1.135-0.427,1.272-1.043l2.84-16.21h10.143L41.279,33.993c-0.917-0.767-2.078-1.186-3.279-1.186c-2.819,0-5.12,2.297-5.12,5.118c0,2.823,2.301,5.119,5.12,5.119c2.59,0,4.794-1.979,5.092-4.534l40.464-0.002c0.637,0,1.173-0.453,1.277-1.076l0.926-5.268c0.064-0.379-0.043-0.767-0.288-1.058c-0.244-0.291-0.606-0.458-0.993-0.458l-10.494-0.01l15.3-20.022c0.26-0.388,0.284-0.856,0.068-1.259c-0.21-0.407-0.631-0.663-1.091-0.663H71.89l1.038-1.356c0.272-0.407,0.299-0.902,0.07-1.334c-0.229-0.424-0.667-0.694-1.144-0.694H47.973L48.3,3.474c0.062-0.376-0.052-0.774-0.302-1.069c-0.244-0.291-0.592-0.45-0.983-0.45C47.015,1.955,41.112,1.955,41.112,1.955z"/></svg>
+    <span style="font-size:13px;font-weight:500;color:rgba(255,255,255,0.55);letter-spacing:0.5px">Passport</span>
+  </div>
+  <button style="background:rgba(255,255,255,0.12);border:none;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="6" r="3.5" stroke="white" stroke-width="1.5"/><path d="M2 16c0-3.5 3.1-6 7-6s7 2.5 7 6" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+  </button>
+</div>
+
+<div class="si">
+<div class="wz-screen" id="wz-screen">
+
+<!-- PLANS -->
+<div id="sc-plans" class="sc active">
+  <div class="page-title">Subscriptions</div>
+
+  <div class="plan-card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:11px">
+      <div><div style="margin-bottom:4px"><span style="background:#1565C0;color:#fff;border-radius:6px;padding:3px 9px;font-size:9px;font-weight:800;letter-spacing:1px">LIGHT</span></div><div class="plan-price" style="color:#1565C0">Free</div></div>
+      <div style="background:#E8EFF9;border-radius:12px;width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="3" stroke="#1565C0" stroke-width="1.5"/><path d="M7 8h10M7 12h6" stroke="#1565C0" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+    </div>
+    <div class="plan-row" style="margin-bottom:12px">
+      <div><span class="c-blue">✓</span> Travel Passport &amp; stamps</div>
+      <div><span class="c-blue">✓</span> Special onboard coupons</div>
+      <div><span class="c-cross">✗</span> <span style="color:#bbb">Visas (discounts &amp; coupons)</span></div>
+      <div><span class="c-cross">✗</span> <span style="color:#bbb">Rare prizes</span></div>
+    </div>
+    <button class="plan-btn btn-blue">Get started free</button>
+  </div>
+
+  <div class="plan-card std-feat">
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:6px">
+      <span style="background:var(--wz-navy);color:#fff;border-radius:6px;padding:3px 9px;font-size:9px;font-weight:800;letter-spacing:1px">STANDARD</span>
+      <span style="background:#FCE8F4;border:1px solid var(--wz-magenta);color:var(--wz-magenta);border-radius:6px;padding:3px 9px;font-size:9px;font-weight:700">Popular Choice</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:11px">
+      <div class="plan-price">€59.99<span class="per">/year</span></div>
+      <div style="background:#EAE7F6;border-radius:12px;width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="3" fill="#EAE7F6" stroke="var(--wz-navy)" stroke-width="1.5"/><path d="M7 8h10M7 12h6" stroke="var(--wz-navy)" stroke-width="1.5" stroke-linecap="round"/><circle cx="16" cy="14" r="3" fill="var(--wz-navy)"/><path d="M15 14l1 1 1.5-1.5" stroke="white" stroke-width="1" stroke-linecap="round"/></svg></div>
+    </div>
+    <div class="plan-row" style="margin-bottom:12px">
+      <div><span class="c-navy">✓</span> Passport + stamps + levels</div>
+      <div><span class="c-navy">✓</span> <b style="color:var(--wz-navy)">5 visas</b> — choose <b>2</b>, get 3 random</div>
+      <div><span class="c-navy">✓</span> Exclusive ticket promotions</div>
+      <div><span class="c-navy">✓</span> Chance to win a rare prize</div>
+    </div>
+    <button class="plan-btn btn-navy" onclick="sw('visas')">Choose Standard</button>
+  </div>
+
+  <div class="plan-card premium">
+    <div class="plan-corner" style="background:var(--wz-magenta);color:#fff">PREMIUM</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:11px;margin-top:10px">
+      <div><div style="font-size:10px;font-weight:700;color:var(--wz-magenta);letter-spacing:1.5px;margin-bottom:3px">PREMIUM</div><div class="plan-price on-dark">€349.99<span class="per">/year</span></div></div>
+      <div style="background:rgba(198,0,126,0.25);border-radius:12px;width:44px;height:44px;display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2l2.5 5 5.5.8-4 3.9.9 5.5L12 14.8l-4.9 2.4.9-5.5-4-3.9 5.5-.8z" fill="var(--wz-magenta)" stroke="var(--wz-magenta)" stroke-width="1"/></svg></div>
+    </div>
+    <div class="plan-row on-dark" style="margin-bottom:12px">
+      <div><span style="color:var(--wz-magenta)">✓</span> Everything in Standard</div>
+      <div><span style="color:var(--wz-magenta)">✓</span> <b style="color:#fff">10 visas</b> — choose <b style="color:#F4A0CC">6</b>, get 4 random</div>
+      <div><span style="color:var(--wz-magenta)">✓</span> 2 cabin bags &amp; priority boarding</div>
+      <div><span style="color:var(--wz-magenta)">✓</span> Premium seat selection</div>
+    </div>
+    <button class="plan-btn btn-pink" onclick="sw('visas')">Choose Premium</button>
+  </div>
+</div>
+
+<!-- PASSPORT -->
+<div id="sc-passport" class="sc">
+  <div class="page-title">My Passport</div>
+
+  <div class="id-card">
+    <div class="id-top">
+      <div>
+        <div class="id-logo-text">W<span class="wi">i</span>zz Air</div>
+        <div style="font-size:8px;color:rgba(255,255,255,0.45);letter-spacing:1.5px;margin-top:2px">TRAVEL PASSPORT</div>
+      </div>
+      <div class="id-type-badge">STANDARD</div>
+    </div>
+    <div class="id-body">
+      <div class="id-main">
+        <div class="id-photo">
+          <svg width="62" height="78" viewBox="0 0 62 78" fill="none">
+            <rect width="62" height="78" fill="#DDD8F0"/>
+            <ellipse cx="31" cy="24" rx="11" ry="12.5" fill="#9B90C8"/>
+            <ellipse cx="19.5" cy="24.5" rx="2.2" ry="3" fill="#9B90C8"/>
+            <ellipse cx="42.5" cy="24.5" rx="2.2" ry="3" fill="#9B90C8"/>
+            <rect x="26.5" y="35" width="9" height="7" rx="3" fill="#9B90C8"/>
+            <path d="M8 78 C8 58 16 52 31 52 C46 52 54 58 54 78 Z" fill="#9B90C8"/>
+          </svg>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:7px">
+          <div><div class="id-label">Surname</div><div class="id-value">WARBLER</div></div>
+          <div><div class="id-label">Given name</div><div class="id-value">URSULA</div></div>
+          <div><div class="id-label">Card No.</div><div class="id-value sm">WZ-2024-00847</div></div>
+          <div><div class="id-label">Gender</div><div class="id-value sm">FEMALE</div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:7px;align-items:flex-end;text-align:right">
+          <div><div class="id-label">Date of birth</div><div class="id-value sm">14 / 12 / 1990</div></div>
+          <div><div class="id-label">Date of issue</div><div class="id-value sm">03 / 01 / 2024</div></div>
+          <div><div class="id-label">Home country</div><div class="id-value sm">HUNGARY</div></div>
+        </div>
+      </div>
+      <div class="id-divider" style="margin:5px 0 4px"></div>
+      <div class="id-stats">
+        <div class="id-stat" style="padding:4px"><div class="id-stat-val pink">23</div><div class="id-stat-lbl">Flights</div></div>
+        <div class="id-stat" style="padding:4px"><div class="id-stat-val">5</div><div class="id-stat-lbl">Countries</div></div>
+        <div class="id-stat" style="padding:4px"><div class="id-stat-val">18 420</div><div class="id-stat-lbl">Miles</div></div>
+      </div>
+    </div>
+    <div class="id-bottom">
+      <div class="id-mrz">P&lt;WIZWARBLER&lt;&lt;URSULA&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;<br>WZ2024008470HUN9012314M2512315&lt;&lt;&lt;&lt;&lt;4</div>
+    </div>
+  </div>
+
+  <div class="section-title">Flight Stamps</div>
+  <div class="pp-viewer" id="pp-viewer">
+
+    <div class="pp-spread active" id="spread-0">
+      <div class="pp-hdr">
+        <div class="pp-hdr-logo">W<span class="wi">i</span>zz Air</div>
+        <div style="display:flex;align-items:center;gap:7px">
+          <span style="font-size:7px;color:rgba(255,255,255,0.45);letter-spacing:1.5px">TRAVEL PASSPORT</span>
+          <span style="background:var(--wz-magenta);border-radius:3px;padding:2px 6px;font-size:7px;font-weight:800;color:#fff;letter-spacing:1px">STANDARD</span>
+        </div>
+      </div>
+      <div class="pp-pages">
+        <div class="pp-spine"></div>
+        <div class="pp-page pp-page-left" style="height:184px">
+          <div class="stmp" style="top:14px;left:10px;transform:rotate(-9deg)">
+            <div class="stmp-oval" style="width:68px;height:68px;border-color:var(--wz-magenta);background:rgba(198,0,126,0.05)">
+              <div style="font-size:5.5px;font-weight:800;color:var(--wz-magenta);letter-spacing:2px">ENTRY</div>
+              <div style="font-size:15px;font-weight:900;color:var(--wz-magenta);line-height:1.1">BUD</div>
+              <div style="font-size:5.5px;font-weight:700;color:var(--wz-magenta);letter-spacing:1px">BUDAPEST</div>
+              <div style="font-size:5px;color:var(--wz-magenta);margin-top:2px;opacity:0.7">14 MAR 2024</div>
+            </div>
+            <div style="font-size:5.5px;font-weight:700;color:var(--wz-magenta);letter-spacing:1.2px;margin-top:3px;opacity:0.55">WIZZ AIR</div>
+          </div>
+          <div class="stmp" style="bottom:16px;left:80px;transform:rotate(6deg)">
+            <div class="stmp-rect" style="width:72px;padding:6px 8px;border-color:var(--wz-navy);background:rgba(6,3,141,0.05)">
+              <div style="font-size:5px;font-weight:800;color:var(--wz-navy);letter-spacing:2px">ARRIVED</div>
+              <svg width="18" height="8" viewBox="0 0 18 8" fill="none" style="margin:1px 0"><path d="M1 4h14M12 1.5l3 2.5-3 2.5" stroke="var(--wz-navy)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div style="font-size:14px;font-weight:900;color:var(--wz-navy);line-height:1">LTN</div>
+              <div style="font-size:5.5px;font-weight:700;color:var(--wz-navy);letter-spacing:0.8px">LONDON</div>
+              <div style="border-top:0.8px solid rgba(6,3,141,0.2);margin-top:3px;padding-top:2px;font-size:5px;color:var(--wz-navy)">18 JAN 2024</div>
+            </div>
+            <div style="font-size:5.5px;font-weight:700;color:var(--wz-navy);letter-spacing:1.2px;margin-top:3px;opacity:0.55">WIZZ AIR</div>
+          </div>
+        </div>
+        <div class="pp-page pp-page-right" style="height:184px">
+          <div style="position:absolute;bottom:14px;right:10px;font-size:44px;font-weight:900;color:rgba(198,0,126,0.06);font-family:monospace;line-height:1;z-index:0;user-select:none">5</div>
+          <div class="stmp" style="top:18px;right:14px;transform:rotate(5deg);z-index:1">
+            <div class="stmp-oval" style="width:68px;height:68px;border-color:var(--wz-blue);background:rgba(1,160,223,0.05)">
+              <div style="font-size:5.5px;font-weight:800;color:var(--wz-blue);letter-spacing:2px">ENTRY</div>
+              <div style="font-size:15px;font-weight:900;color:var(--wz-blue);line-height:1.1">VIE</div>
+              <div style="font-size:5.5px;font-weight:700;color:var(--wz-blue);letter-spacing:1px">VIENNA</div>
+              <div style="font-size:5px;color:var(--wz-blue);margin-top:2px;opacity:0.7">02 DEC 2023</div>
+            </div>
+            <div style="font-size:5.5px;font-weight:700;color:var(--wz-blue);letter-spacing:1.2px;margin-top:3px;opacity:0.55">WIZZ AIR</div>
+          </div>
+        </div>
+      </div>
+      <div class="pp-footer">
+        <div class="pp-footer-mrz">WZ&lt;2024&lt;00847&lt;WARBLER&lt;URSULA&lt;&lt;&lt;</div>
+        <div class="pp-footer-num">04 | 05</div>
+      </div>
+    </div>
+
+    <div class="pp-spread" id="spread-1">
+      <div class="pp-hdr">
+        <div class="pp-hdr-logo">W<span class="wi">i</span>zz Air</div>
+        <div style="display:flex;align-items:center;gap:7px">
+          <span style="font-size:7px;color:rgba(255,255,255,0.45);letter-spacing:1.5px">TRAVEL PASSPORT</span>
+          <span style="background:var(--wz-magenta);border-radius:3px;padding:2px 6px;font-size:7px;font-weight:800;color:#fff;letter-spacing:1px">STANDARD</span>
+        </div>
+      </div>
+      <div class="pp-pages">
+        <div class="pp-spine"></div>
+        <div class="pp-page pp-page-left" style="height:184px">
+          <div style="position:absolute;bottom:14px;left:8px;font-size:44px;font-weight:900;color:rgba(6,3,141,0.06);font-family:monospace;line-height:1;z-index:0;user-select:none">6</div>
+          <div class="stmp" style="top:12px;left:14px;transform:rotate(-6deg);z-index:1">
+            <div class="stmp-rect" style="width:74px;padding:6px 8px;border-color:var(--wz-success);background:rgba(14,154,108,0.05)">
+              <div style="font-size:5px;font-weight:800;color:var(--wz-success);letter-spacing:2px">ARRIVED</div>
+              <svg width="18" height="8" viewBox="0 0 18 8" fill="none" style="margin:1px 0"><path d="M1 4h14M12 1.5l3 2.5-3 2.5" stroke="var(--wz-success)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div style="font-size:14px;font-weight:900;color:var(--wz-success);line-height:1">WAW</div>
+              <div style="font-size:5.5px;font-weight:700;color:var(--wz-success);letter-spacing:0.8px">WARSAW</div>
+              <div style="border-top:0.8px solid rgba(14,154,108,0.2);margin-top:3px;padding-top:2px;font-size:5px;color:var(--wz-success)">15 NOV 2023</div>
+            </div>
+            <div style="font-size:5.5px;font-weight:700;color:var(--wz-success);letter-spacing:1.2px;margin-top:3px;opacity:0.55">WIZZ AIR</div>
+          </div>
+          <div class="stmp" style="bottom:12px;right:4px;transform:rotate(8deg);z-index:1">
+            <div class="stmp-oval" style="width:60px;height:60px;border-color:var(--wz-magenta);background:rgba(198,0,126,0.05)">
+              <div style="font-size:5px;font-weight:800;color:var(--wz-magenta);letter-spacing:2px">ENTRY</div>
+              <div style="font-size:13px;font-weight:900;color:var(--wz-magenta);line-height:1.1">FCO</div>
+              <div style="font-size:5px;font-weight:700;color:var(--wz-magenta);letter-spacing:1px">ROME</div>
+              <div style="font-size:4.5px;color:var(--wz-magenta);margin-top:2px;opacity:0.7">07 AUG 2023</div>
+            </div>
+            <div style="font-size:5.5px;font-weight:700;color:var(--wz-magenta);letter-spacing:1.2px;margin-top:3px;opacity:0.55">WIZZ AIR</div>
+          </div>
+        </div>
+        <div class="pp-page pp-page-right" style="height:184px">
+          <div style="position:absolute;bottom:14px;right:10px;font-size:44px;font-weight:900;color:rgba(198,0,126,0.06);font-family:monospace;line-height:1;z-index:0;user-select:none">7</div>
+          <div class="stmp" style="top:20px;left:12px;transform:rotate(-4deg);z-index:1">
+            <div class="stmp-rect" style="width:72px;padding:6px 8px;border-color:var(--wz-navy);background:rgba(6,3,141,0.05)">
+              <div style="font-size:5px;font-weight:800;color:var(--wz-navy);letter-spacing:2px">ARRIVED</div>
+              <svg width="18" height="8" viewBox="0 0 18 8" fill="none" style="margin:1px 0"><path d="M1 4h14M12 1.5l3 2.5-3 2.5" stroke="var(--wz-navy)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <div style="font-size:14px;font-weight:900;color:var(--wz-navy);line-height:1">BCN</div>
+              <div style="font-size:5.5px;font-weight:700;color:var(--wz-navy);letter-spacing:0.8px">BARCELONA</div>
+              <div style="border-top:0.8px solid rgba(6,3,141,0.2);margin-top:3px;padding-top:2px;font-size:5px;color:var(--wz-navy)">22 MAY 2023</div>
+            </div>
+            <div style="font-size:5.5px;font-weight:700;color:var(--wz-navy);letter-spacing:1.2px;margin-top:3px;opacity:0.55">WIZZ AIR</div>
+          </div>
+        </div>
+      </div>
+      <div class="pp-footer">
+        <div class="pp-footer-mrz">WZ&lt;2024&lt;00847&lt;WARBLER&lt;URSULA&lt;&lt;&lt;</div>
+        <div class="pp-footer-num">06 | 07</div>
+      </div>
+    </div>
+
+    <div class="pp-spread" id="spread-2">
+      <div class="pp-hdr">
+        <div class="pp-hdr-logo">W<span class="wi">i</span>zz Air</div>
+        <div style="display:flex;align-items:center;gap:7px">
+          <span style="font-size:7px;color:rgba(255,255,255,0.45);letter-spacing:1.5px">TRAVEL PASSPORT</span>
+          <span style="background:var(--wz-magenta);border-radius:3px;padding:2px 6px;font-size:7px;font-weight:800;color:#fff;letter-spacing:1px">STANDARD</span>
+        </div>
+      </div>
+      <div class="pp-pages">
+        <div class="pp-spine"></div>
+        <div class="pp-page pp-page-left" style="height:184px">
+          <div style="position:absolute;bottom:14px;left:8px;font-size:44px;font-weight:900;color:rgba(6,3,141,0.06);font-family:monospace;line-height:1;z-index:0;user-select:none">8</div>
+        </div>
+        <div class="pp-page pp-page-right" style="height:184px;display:flex;align-items:center;justify-content:center">
+          <div style="position:absolute;bottom:14px;right:10px;font-size:44px;font-weight:900;color:rgba(198,0,126,0.06);font-family:monospace;line-height:1;z-index:0;user-select:none">9</div>
+          <div style="text-align:center;z-index:1">
+            <div style="width:52px;height:52px;border-radius:50%;border:1.5px dashed #D8D8E8;display:flex;align-items:center;justify-content:center;margin:0 auto"><span style="font-size:22px;color:#D8D8E8;font-weight:200;line-height:1">+</span></div>
+            <div style="font-size:8px;color:#C0C0D0;margin-top:7px;font-weight:600">Next stamp</div>
+          </div>
+        </div>
+      </div>
+      <div class="pp-footer">
+        <div class="pp-footer-mrz">WZ&lt;2024&lt;00847&lt;WARBLER&lt;URSULA&lt;&lt;&lt;</div>
+        <div class="pp-footer-num">08 | 09</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="pp-controls">
+    <button class="pp-arr" id="pp-prev" onclick="ppNav(-1)" disabled>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7.5 2.5L4.5 6l3 3.5" stroke="var(--wz-navy)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="pp-dots" id="pp-dots">
+      <div class="pp-dot active" onclick="ppGo(0)"></div>
+      <div class="pp-dot" onclick="ppGo(1)"></div>
+      <div class="pp-dot" onclick="ppGo(2)"></div>
+    </div>
+    <button class="pp-arr" id="pp-next" onclick="ppNav(1)">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 2.5L7.5 6l-3 3.5" stroke="var(--wz-navy)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+
+  <div class="map-box" style="margin-top:8px">
+    <div class="map-hdr">
+      <div style="font-size:13px;font-weight:700;color:var(--wz-navy)">Countries visited</div>
+      <div style="display:flex;gap:12px">
+        <div style="display:flex;align-items:center;gap:5px"><div style="width:8px;height:8px;border-radius:50%;background:var(--wz-magenta)"></div><span style="font-size:10px;color:#666">Visited</span></div>
+        <div style="display:flex;align-items:center;gap:5px"><div style="width:8px;height:8px;border-radius:2px;background:#d8d0e8"></div><span style="font-size:10px;color:#666">Wizz routes</span></div>
+      </div>
+    </div>
+    <div id="leaflet-map"></div>
+    <div style="padding:8px 12px 10px;display:flex;gap:8px;flex-wrap:wrap">
+      <span style="background:#FCE8F4;border:1px solid var(--wz-magenta);color:var(--wz-magenta);border-radius:20px;padding:3px 9px;font-size:10px;font-weight:600">🇬🇧 UK</span>
+      <span style="background:#FCE8F4;border:1px solid var(--wz-magenta);color:var(--wz-magenta);border-radius:20px;padding:3px 9px;font-size:10px;font-weight:600">🇭🇺 Hungary</span>
+      <span style="background:#FCE8F4;border:1px solid var(--wz-magenta);color:var(--wz-magenta);border-radius:20px;padding:3px 9px;font-size:10px;font-weight:600">🇦🇹 Austria</span>
+      <span style="background:#FCE8F4;border:1px solid var(--wz-magenta);color:var(--wz-magenta);border-radius:20px;padding:3px 9px;font-size:10px;font-weight:600">🇵🇱 Poland</span>
+      <span style="background:#FCE8F4;border:1px solid var(--wz-magenta);color:var(--wz-magenta);border-radius:20px;padding:3px 9px;font-size:10px;font-weight:600">🇮🇹 Italy</span>
+    </div>
+  </div>
+</div>
+
+<!-- VISAS -->
+<div id="sc-visas" class="sc">
+  <div class="page-title">My Visas</div>
+  <div class="page-sub" style="margin-bottom:12px">8 active · tap a visa for promo code</div>
+  <div class="vp-stack">
+
+    <div class="vp-spread-v">
+      <div class="pp-hdr"><div class="pp-hdr-logo">W<span class="wi">i</span>zz Air</div><div style="display:flex;align-items:center;gap:7px"><span style="font-size:7px;color:rgba(255,255,255,0.45);letter-spacing:1.5px">VISA PAGES</span><span style="background:var(--wz-magenta);border-radius:3px;padding:2px 6px;font-size:7px;font-weight:800;color:#fff;letter-spacing:1px">STANDARD</span></div></div>
+      <div class="vp-pg"><div class="vp-pgn">12</div>
+        <div class="visa-card vc-navy" onclick="openPromo('BAGGAGE20','Extra baggage','−20%','31 Dec 2025')"><div class="vc-body"><div><div class="vc-discount">−20%</div><div class="vc-name">Extra baggage</div></div><div class="vc-right"><div class="vc-exp-lbl">EXPIRES</div><div class="vc-exp-val">31 Dec 2025</div></div></div><div class="vc-perf"></div><div class="vc-footer"><div class="vc-logo">W<span class="wi">i</span>zz Air</div><div class="vc-hint">tap for code</div></div></div>
+        <div class="visa-card vc-blue" onclick="openPromo('SEAT1FREE','Seat selection','Free','1 use only')"><div class="vc-body"><div><div class="vc-discount">Free</div><div class="vc-name">Seat selection</div></div><div class="vc-right"><div class="vc-exp-lbl">VALID</div><div class="vc-exp-val">1 use only</div></div></div><div class="vc-perf"></div><div class="vc-footer"><div class="vc-logo">W<span class="wi">i</span>zz Air</div><div class="vc-hint">tap for code</div></div></div>
+        <div style="height:14px"></div>
+      </div>
+      <div class="pp-footer"><div class="pp-footer-mrz">WZ&lt;VISA&lt;WARBLER&lt;URSULA&lt;&lt;&lt;&lt;</div><div class="pp-footer-num">12</div></div>
+    </div>
+
+    <div class="vp-spread-v">
+      <div class="pp-hdr"><div class="pp-hdr-logo">W<span class="wi">i</span>zz Air</div><div style="display:flex;align-items:center;gap:7px"><span style="font-size:7px;color:rgba(255,255,255,0.45);letter-spacing:1.5px">VISA PAGES</span><span style="background:var(--wz-magenta);border-radius:3px;padding:2px 6px;font-size:7px;font-weight:800;color:#fff;letter-spacing:1px">STANDARD</span></div></div>
+      <div class="vp-pg"><div class="vp-pgn" style="right:auto;left:12px">13</div>
+        <div class="visa-card vc-pink" onclick="openPromo('WINTER15','Winter flight','−15%','28 Feb 2026')"><div class="vc-body"><div><div class="vc-discount">−15%</div><div class="vc-name">Winter flight</div></div><div class="vc-right"><div class="vc-exp-lbl">EXPIRES</div><div class="vc-exp-val">28 Feb 2026</div></div></div><div class="vc-perf"></div><div class="vc-footer"><div class="vc-logo">W<span class="wi">i</span>zz Air</div><div class="vc-hint">tap for code</div></div></div>
+        <div class="visa-card vc-pink" onclick="openPromo('FAMILY10','Family deal','−€10','31 Dec 2025')"><div class="vc-body"><div><div class="vc-discount">−€10</div><div class="vc-name">Family deal</div></div><div class="vc-right"><div class="vc-exp-lbl">EXPIRES</div><div class="vc-exp-val">31 Dec 2025</div></div></div><div class="vc-perf"></div><div class="vc-footer"><div class="vc-logo">W<span class="wi">i</span>zz Air</div><div class="vc-hint">tap for code</div></div></div>
+        <div style="height:14px"></div>
+      </div>
+      <div class="pp-footer"><div class="pp-footer-mrz">WZ&lt;VISA&lt;WARBLER&lt;URSULA&lt;&lt;&lt;&lt;</div><div class="pp-footer-num">13</div></div>
+    </div>
+
+    <div class="vp-spread-v">
+      <div class="pp-hdr"><div class="pp-hdr-logo">W<span class="wi">i</span>zz Air</div><div style="display:flex;align-items:center;gap:7px"><span style="font-size:7px;color:rgba(255,255,255,0.45);letter-spacing:1.5px">VISA PAGES</span><span style="background:var(--wz-magenta);border-radius:3px;padding:2px 6px;font-size:7px;font-weight:800;color:#fff;letter-spacing:1px">STANDARD</span></div></div>
+      <div class="vp-pg"><div class="vp-pgn">14</div>
+        <div class="visa-card vc-navy" onclick="openPromo('NIGHT25','Late night flight','−25%','14 Mar 2027')"><div class="vc-body"><div><div class="vc-discount">−25%</div><div class="vc-name">Late night flight</div></div><div class="vc-right"><div class="vc-exp-lbl">EXPIRES</div><div class="vc-exp-val">14 Mar 2027</div></div></div><div class="vc-perf"></div><div class="vc-footer"><div class="vc-logo">W<span class="wi">i</span>zz Air</div><div class="vc-hint">tap for code</div></div></div>
+        <div style="height:14px"></div>
+      </div>
+      <div class="pp-footer"><div class="pp-footer-mrz">WZ&lt;VISA&lt;WARBLER&lt;URSULA&lt;&lt;&lt;&lt;</div><div class="pp-footer-num">14</div></div>
+    </div>
+
+    <div class="vp-spread-v">
+      <div class="pp-hdr"><div class="pp-hdr-logo">W<span class="wi">i</span>zz Air</div><div style="display:flex;align-items:center;gap:7px"><span style="font-size:7px;color:rgba(255,255,255,0.45);letter-spacing:1.5px">VISA PAGES</span><span style="background:var(--wz-magenta);border-radius:3px;padding:2px 6px;font-size:7px;font-weight:800;color:#fff;letter-spacing:1px">STANDARD</span></div></div>
+      <div class="vp-pg"><div class="vp-pgn" style="right:auto;left:12px">15</div>
+        <div class="visa-card vc-teal" onclick="openPromo('ONBOARD','Special onboard coupons','Free','31 Dec 2025')"><div class="vc-body"><div><div class="vc-discount">Free</div><div class="vc-name">Special onboard coupons</div></div><div class="vc-right"><div class="vc-exp-lbl">VALID</div><div class="vc-exp-val">All flights</div></div></div><div class="vc-perf"></div><div class="vc-footer"><div class="vc-logo">W<span class="wi">i</span>zz Air</div><div class="vc-hint">tap for code</div></div></div>
+        <div class="visa-card vc-navy" onclick="openPromo('EXCL2025','Exclusive promotions','Personalized','31 Dec 2025')"><div class="vc-body"><div><div class="vc-discount">Excl.</div><div class="vc-name">Ticket promos &amp; offers</div></div><div class="vc-right"><div class="vc-exp-lbl">VALID</div><div class="vc-exp-val">Personalized</div></div></div><div class="vc-perf"></div><div class="vc-footer"><div class="vc-logo">W<span class="wi">i</span>zz Air</div><div class="vc-hint">tap for code</div></div></div>
+        <div style="height:14px"></div>
+      </div>
+      <div class="pp-footer"><div class="pp-footer-mrz">WZ&lt;VISA&lt;WARBLER&lt;URSULA&lt;&lt;&lt;&lt;</div><div class="pp-footer-num">15</div></div>
+    </div>
+
+    <div class="vp-spread-v">
+      <div class="pp-hdr"><div class="pp-hdr-logo">W<span class="wi">i</span>zz Air</div><div style="display:flex;align-items:center;gap:7px"><span style="font-size:7px;color:rgba(255,255,255,0.45);letter-spacing:1.5px">VISA PAGES</span><span style="background:var(--wz-magenta);border-radius:3px;padding:2px 6px;font-size:7px;font-weight:800;color:#fff;letter-spacing:1px">STANDARD</span></div></div>
+      <div class="vp-pg"><div class="vp-pgn">16</div>
+        <div class="visa-card vc-navy" onclick="openPromo('FARE1000','Flight fare discount','−€10','from €29.99')"><div class="vc-body"><div><div class="vc-discount">−€10</div><div class="vc-name">Flight fares from €29.99</div></div><div class="vc-right"><div class="vc-exp-lbl">FROM</div><div class="vc-exp-val">€29.99</div></div></div><div class="vc-perf"></div><div class="vc-footer"><div class="vc-logo">W<span class="wi">i</span>zz Air</div><div class="vc-hint">tap for code</div></div></div>
+        <div class="visa-card vc-blue" onclick="openPromo('BAGS500','Baggage &amp; priority','−€5','Per booking')"><div class="vc-body"><div><div class="vc-discount">−€5</div><div class="vc-name">Baggage or 2 cabin bags</div></div><div class="vc-right"><div class="vc-exp-lbl">VALID</div><div class="vc-exp-val">Per booking</div></div></div><div class="vc-perf"></div><div class="vc-footer"><div class="vc-logo">W<span class="wi">i</span>zz Air</div><div class="vc-hint">tap for code</div></div></div>
+        <div style="height:14px"></div>
+      </div>
+      <div class="pp-footer"><div class="pp-footer-mrz">WZ&lt;VISA&lt;WARBLER&lt;URSULA&lt;&lt;&lt;&lt;</div><div class="pp-footer-num">16</div></div>
+    </div>
+
+    <div class="vp-spread-v">
+      <div class="pp-hdr"><div class="pp-hdr-logo">W<span class="wi">i</span>zz Air</div><div style="display:flex;align-items:center;gap:7px"><span style="font-size:7px;color:rgba(255,255,255,0.45);letter-spacing:1.5px">VISA PAGES</span><span style="background:var(--wz-magenta);border-radius:3px;padding:2px 6px;font-size:7px;font-weight:800;color:#fff;letter-spacing:1px">STANDARD</span></div></div>
+      <div class="vp-pg"><div class="vp-pgn" style="right:auto;left:12px">17</div>
+        <div class="visa-card vc-pink" onclick="openPromo('PRICARE','Priority customer care','Free','WDC members')"><div class="vc-body"><div><div class="vc-discount">Free</div><div class="vc-name">Priority customer care</div></div><div class="vc-right"><div class="vc-exp-lbl">VALID</div><div class="vc-exp-val">WDC members</div></div></div><div class="vc-perf"></div><div class="vc-footer"><div class="vc-logo">W<span class="wi">i</span>zz Air</div><div class="vc-hint">tap for code</div></div></div>
+        <div class="visa-card vc-teal" onclick="openPromo('PARTNER','Partner benefits','Enhanced','For members')"><div class="vc-body"><div><div class="vc-discount">Excl.</div><div class="vc-name">Partner benefits</div></div><div class="vc-right"><div class="vc-exp-lbl">VALID</div><div class="vc-exp-val">For members</div></div></div><div class="vc-perf"></div><div class="vc-footer"><div class="vc-logo">W<span class="wi">i</span>zz Air</div><div class="vc-hint">tap for code</div></div></div>
+        <div style="height:14px"></div>
+      </div>
+      <div class="pp-footer"><div class="pp-footer-mrz">WZ&lt;VISA&lt;WARBLER&lt;URSULA&lt;&lt;&lt;&lt;</div><div class="pp-footer-num">17</div></div>
+    </div>
+
+    <div class="vp-spread-v">
+      <div class="pp-hdr"><div class="pp-hdr-logo">W<span class="wi">i</span>zz Air</div><div style="display:flex;align-items:center;gap:7px"><span style="font-size:7px;color:rgba(255,255,255,0.45);letter-spacing:1.5px">VISA PAGES</span><span style="background:var(--wz-magenta);border-radius:3px;padding:2px 6px;font-size:7px;font-weight:800;color:#fff;letter-spacing:1px">STANDARD</span></div></div>
+      <div class="vp-pg"><div class="vp-pgn">18</div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 0;z-index:1;position:relative">
+          <div style="width:36px;height:36px;border-radius:50%;border:1.5px dashed #D8D8E8;display:flex;align-items:center;justify-content:center"><span style="font-size:18px;color:#D8D8E8;font-weight:200;line-height:1">+</span></div>
+          <div style="font-size:8px;color:#C0C0D0;margin-top:7px;font-weight:600">Next visa</div>
+        </div>
+      </div>
+      <div class="pp-footer"><div class="pp-footer-mrz">WZ&lt;VISA&lt;WARBLER&lt;URSULA&lt;&lt;&lt;&lt;</div><div class="pp-footer-num">18</div></div>
+    </div>
+
+  </div>
+  <div style="margin-top:12px"><button class="btn-outline" onclick="sw('shop')">+ Extra visa packs in the shop</button></div>
+
+  <div class="promo-popup" id="promo-popup" onclick="closePromo(event)">
+    <div class="promo-box">
+      <div class="promo-title">Promo Code</div>
+      <div class="promo-name" id="promo-name"></div>
+      <div class="promo-disc" id="promo-disc"></div>
+      <div class="promo-code-wrap"><div class="promo-code" id="promo-code"></div><div class="promo-copy" onclick="copyPromo()">Tap to copy</div></div>
+      <div class="promo-valid" id="promo-valid"></div>
+      <button class="promo-close" onclick="closePromo()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHOP -->
+<div id="sc-shop" class="sc">
+  <div class="page-title">Visa Shop</div>
+
+  <div class="pack-card-new pc-starter" onclick="openPicker(1,'starter')">
+    <div class="pc-body">
+      <div class="pc-count-block"><div class="pc-count-num">3</div><div class="pc-count-lbl">visas</div></div>
+      <div class="pc-sep"></div>
+      <div class="pc-right">
+        <div class="pc-name">Starter Pack</div>
+        <div class="pc-slots"><div class="pc-slot pc-slot-pick">✓</div><div class="pc-slot pc-slot-rand">?</div><div class="pc-slot pc-slot-rand">?</div></div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;padding-right:2px"><div class="pc-price">€5.99</div></div>
+    </div>
+  </div>
+
+  <div class="pack-card-new pc-explorer" onclick="openPicker(2,'explorer')">
+    <div class="pc-badge pc-badge-pop">Popular</div>
+    <div class="pc-body">
+      <div class="pc-count-block"><div class="pc-count-num">5</div><div class="pc-count-lbl">visas</div></div>
+      <div class="pc-sep"></div>
+      <div class="pc-right">
+        <div class="pc-name">Explorer Pack</div>
+        <div class="pc-slots" style="max-width:99px"><div class="pc-slot pc-slot-pick">✓</div><div class="pc-slot pc-slot-pick">✓</div><div class="pc-slot pc-slot-rand">?</div><div class="pc-slot pc-slot-rand">?</div><div class="pc-slot pc-slot-rand">?</div></div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;padding-right:2px"><div class="pc-price">€8.99</div></div>
+    </div>
+  </div>
+
+  <div class="pack-card-new pc-pro" onclick="openPicker(4,'pro')">
+    <div class="pc-badge pc-badge-best">Best value</div>
+    <div class="pc-body">
+      <div class="pc-count-block"><div class="pc-count-num pc-count-num-w">10</div><div class="pc-count-lbl pc-count-lbl-w">visas</div></div>
+      <div class="pc-sep pc-sep-w"></div>
+      <div class="pc-right">
+        <div class="pc-name pc-name-w">Pro Pack</div>
+        <div class="pc-slots"><div class="pc-slot pc-slot-pick-w">✓</div><div class="pc-slot pc-slot-pick-w">✓</div><div class="pc-slot pc-slot-pick-w">✓</div><div class="pc-slot pc-slot-pick-w">✓</div><div class="pc-slot pc-slot-rand-w">?</div><div class="pc-slot pc-slot-rand-w">?</div><div class="pc-slot pc-slot-rand-w">?</div><div class="pc-slot pc-slot-rand-w">?</div><div class="pc-slot pc-slot-rand-w">?</div><div class="pc-slot pc-slot-rand-w">?</div></div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;padding-right:2px"><div class="pc-price pc-price-w">€12.99</div></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- ENVELOPE OVERLAY -->
+<div class="env-overlay" id="env-overlay">
+  <div id="env-stage">
+    <div class="envelope" id="envelope" onclick="openEnvelope()">
+      <div class="env-body"></div>
+      <div class="env-flap" id="env-flap"></div>
+      <div class="env-seal" id="env-seal">W<span style="color:#fff">i</span></div>
+    </div>
+    <div class="env-hint">Tap to open</div>
+  </div>
+  <div class="cards-stage" id="cards-stage">
+    <div style="color:rgba(255,255,255,0.5);font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px">Your visas</div>
+    <div class="cards-row" id="cards-row"></div>
+    <button class="cards-btn" id="cards-done-btn" style="display:none;width:220px" onclick="closeEnvOverlay()">My Visas</button>
+    <button class="cards-btn" id="cards-more-btn" style="display:none;width:220px;background:transparent;border:1.5px solid rgba(255,255,255,0.3);margin-top:8px" onclick="closeEnvOverlay();setTimeout(function(){sw('shop')},50)">Buy another pack</button>
+  </div>
+</div>
+
+<!-- PICKER -->
+<div class="pw" id="pw">
+  <div class="ph">
+    <button class="bb" onclick="closePicker()"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M12 5l-5 5 5 5" stroke="var(--wz-navy)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div><div style="font-size:16px;font-weight:800;color:var(--wz-navy)">Choose your visas</div><div style="font-size:11px;color:#888;margin-top:1px" id="p-sub">Select visas</div></div>
+    <div style="margin-left:auto;background:#EAEAF2;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--wz-navy)" id="p-ctr">0/1</div>
+  </div>
+  <div class="pbar"><div class="pfill" id="p-fill" style="width:0%"></div></div>
+  <div id="p-opts"></div>
+  <div class="cbar"><button class="cbtn" id="cbtn" disabled onclick="confirmPick()">Confirm selection</button></div>
+</div>
+</div>
+
+<div class="wz-nav">
+  <button class="nav-tab active" id="tab-plans" onclick="sw('plans')"><svg class="ni" viewBox="0 0 22 22" fill="none"><rect x="3" y="3" width="16" height="16" rx="3" stroke="var(--wz-magenta)" stroke-width="1.5"/><path d="M7 7h8M7 11h5M7 15h3" stroke="var(--wz-magenta)" stroke-width="1.5" stroke-linecap="round"/></svg><span class="nl" style="color:var(--wz-magenta)">Plans</span></button>
+  <button class="nav-tab" id="tab-passport" onclick="sw('passport')"><svg class="ni" viewBox="0 0 22 22" fill="none"><rect x="4" y="2" width="14" height="18" rx="3" stroke="#aaa" stroke-width="1.5"/><path d="M7 7h8M7 11h5" stroke="#aaa" stroke-width="1.5" stroke-linecap="round"/><circle cx="11" cy="15" r="2" stroke="#aaa" stroke-width="1.3"/></svg><span class="nl">Passport</span></button>
+  <button class="nav-tab" id="tab-visas" onclick="sw('visas')"><svg class="ni" viewBox="0 0 22 22" fill="none"><rect x="2" y="6" width="18" height="12" rx="3" stroke="#aaa" stroke-width="1.5"/><path d="M2 10h18" stroke="#aaa" stroke-width="1.5"/><circle cx="7" cy="14" r="1.5" fill="#aaa"/></svg><span class="nl">Visas</span></button>
+  <button class="nav-tab" id="tab-shop" onclick="sw('shop')"><svg class="ni" viewBox="0 0 22 22" fill="none"><path d="M4 4h2l2.5 8h7l2-5H8" stroke="#aaa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="18" r="1.5" fill="#aaa"/><circle cx="16" cy="18" r="1.5" fill="#aaa"/></svg><span class="nl">Shop</span></button>
+</div>
+</div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<script>
+var screens=['plans','passport','visas','shop'];
+var mapInited=false;
+function sw(name){
+  screens.forEach(function(s){
+    document.getElementById('sc-'+s).className='sc'+(s===name?' active':'');
+    var t=document.getElementById('tab-'+s);if(!t)return;
+    var col=s===name?'#C6007E':'#aaa';
+    t.className='nav-tab'+(s===name?' active':'');
+    t.querySelector('.nl').style.color=col;
+    t.querySelectorAll('path,rect,circle').forEach(function(p){
+      if(p.getAttribute('stroke')&&p.getAttribute('stroke')!=='none')p.setAttribute('stroke',col);
+      if(p.getAttribute('fill')==='#aaa')p.setAttribute('fill',col);
+    });
+  });
+  document.getElementById('wz-screen').scrollTop=0;
+  if(name==='passport'&&!mapInited){setTimeout(initMap,150);}
+}
+
+function openPromo(code,name,disc,exp){
+  document.getElementById('promo-code').textContent=code;
+  document.getElementById('promo-name').textContent=name;
+  document.getElementById('promo-disc').textContent=disc;
+  document.getElementById('promo-valid').textContent='Valid until '+exp;
+  document.getElementById('promo-popup').className='promo-popup show';
+}
+function closePromo(e){
+  if(!e||e.target===document.getElementById('promo-popup')||e.currentTarget===document.querySelector('.promo-close'))
+    document.getElementById('promo-popup').className='promo-popup';
+}
+function copyPromo(){
+  var code=document.getElementById('promo-code').textContent;
+  if(navigator.clipboard)navigator.clipboard.writeText(code);
+  document.querySelector('.promo-copy').textContent='Copied!';
+  setTimeout(function(){document.querySelector('.promo-copy').textContent='Tap to copy';},1500);
+}
+
+var ppCurrent=0,ppTotal=3;
+function ppGo(idx){
+  document.getElementById('spread-'+ppCurrent).className='pp-spread';
+  ppCurrent=idx;
+  document.getElementById('spread-'+ppCurrent).className='pp-spread active';
+  document.getElementById('pp-dots').querySelectorAll('.pp-dot').forEach(function(d,i){d.className='pp-dot'+(i===ppCurrent?' active':'');});
+  document.getElementById('pp-prev').disabled=ppCurrent===0;
+  document.getElementById('pp-next').disabled=ppCurrent===ppTotal-1;
+}
+function ppNav(dir){ppGo(Math.max(0,Math.min(ppTotal-1,ppCurrent+dir)));}
+
+var tsX=null;
+setTimeout(function(){
+  var v=document.getElementById('pp-viewer');
+  if(!v)return;
+  v.addEventListener('touchstart',function(e){tsX=e.touches[0].clientX;},{passive:true});
+  v.addEventListener('touchend',function(e){if(tsX===null)return;var dx=e.changedTouches[0].clientX-tsX;if(Math.abs(dx)>30)ppNav(dx<0?1:-1);tsX=null;},{passive:true});
+},300);
+
+function initMap(){
+  if(mapInited)return;mapInited=true;
+  var lmap=L.map('leaflet-map',{zoomControl:true,attributionControl:false,dragging:true,scrollWheelZoom:true,doubleClickZoom:false,touchZoom:true,boxZoom:false,keyboard:false}).setView([50,22],3.2);
+  var visitedSet=new Set(['Hungary','United Kingdom','Austria','Poland','Italy']);
+  var wizzSet=new Set(['Albania','Armenia','Austria','Azerbaijan','Belgium','Bosnia and Herzegovina','Bulgaria','Croatia','Cyprus','Czech Republic','Denmark','Egypt','Estonia','Finland','France','Georgia','Germany','Greece','Hungary','Iceland','Israel','Italy','Jordan','Kosovo','Lithuania','Malta','Moldova','Montenegro','Morocco','Netherlands','North Macedonia','Norway','Poland','Portugal','Romania','Saudi Arabia','Serbia','Slovakia','Slovenia','Spain','Sweden','Turkey','United Arab Emirates','United Kingdom']);
+  var nameMap={'008':'Albania','051':'Armenia','040':'Austria','031':'Azerbaijan','056':'Belgium','070':'Bosnia and Herzegovina','100':'Bulgaria','191':'Croatia','196':'Cyprus','203':'Czech Republic','208':'Denmark','818':'Egypt','233':'Estonia','246':'Finland','250':'France','276':'Germany','268':'Georgia','300':'Greece','348':'Hungary','352':'Iceland','376':'Israel','380':'Italy','400':'Jordan','383':'Kosovo','440':'Lithuania','470':'Malta','498':'Moldova','499':'Montenegro','504':'Morocco','528':'Netherlands','578':'Norway','616':'Poland','620':'Portugal','642':'Romania','682':'Saudi Arabia','688':'Serbia','703':'Slovakia','705':'Slovenia','724':'Spain','752':'Sweden','792':'Turkey','784':'United Arab Emirates','807':'North Macedonia','826':'United Kingdom'};
+  fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(function(r){return r.json();}).then(function(world){
+    var geojson=topojson.feature(world,world.objects.countries);
+    geojson.features=geojson.features.filter(function(f){return String(f.id).padStart(3,'0')!=='010';});
+    L.geoJSON(geojson,{style:function(f){var id=String(f.id).padStart(3,'0');var name=nameMap[id]||'';return{fillColor:visitedSet.has(name)?'#C6007E':wizzSet.has(name)?'#d8d0e8':'#eeeaf5',fillOpacity:1,color:'#fff',weight:0.7};}}).addTo(lmap);
+  });
+}
+
+var pickerMax=1,selected=[],pendingRandomCount=0,currentVisaPool=[];
+var pickableVisas=[
+  {id:0,amt:'−50%',name:'Priority boarding',col:'#C6007E',bg:'#FCE8F4',icon:'🚀'},
+  {id:1,amt:'−€5',name:'Ticket discount',col:'#06038D',bg:'#EAE7F6',icon:'🎟️'},
+  {id:2,amt:'−50%',name:'Standard seat selection',col:'#1565C0',bg:'#E8EFF9',icon:'💺'},
+  {id:3,amt:'Free',name:'Sit together',col:'#0A8A60',bg:'#E0F5ED',icon:'🪑'},
+  {id:4,amt:'−10%',name:'Booking.com',col:'#003580',bg:'#E8EDF8',icon:'🏨'},
+  {id:5,amt:'−25%',name:'Late night flight',col:'#C6007E',bg:'#FCE8F4',icon:'🌙'},
+  {id:6,amt:'−20%',name:'Bags & extras',col:'#06038D',bg:'#EAE7F6',icon:'🧳'},
+  {id:7,amt:'−€10',name:'Group flight',col:'#06038D',bg:'#EAE7F6',icon:'👥'},
+  {id:8,amt:'−10%',name:'Polar light routes',col:'#1565C0',bg:'#E8EFF9',icon:'🌌'},
+  {id:9,amt:'−10%',name:'November flights',col:'#C6007E',bg:'#FCE8F4',icon:'🍂'},
+  {id:10,amt:'−10%',name:'Booking discount',col:'#06038D',bg:'#EAE7F6',icon:'📅'},
+  {id:11,amt:'−10%',name:'Duty-free onboard',col:'#D89A00',bg:'rgba(216,154,0,0.1)',icon:'🛍️'},
+  {id:12,amt:'€10→€7',name:'Food voucher',col:'#D89A00',bg:'rgba(216,154,0,0.1)',icon:'🍽️'},
+  {id:13,amt:'−10%',name:'Return ticket',col:'#C6007E',bg:'#FCE8F4',icon:'↔️'},
+];
+var randomVisas=[
+  {id:50,amt:'−10%',name:'Polar light routes',col:'#1565C0',bg:'#E8EFF9',icon:'🌌'},
+  {id:51,amt:'−10%',name:'November flights',col:'#C6007E',bg:'#FCE8F4',icon:'🍂'},
+  {id:52,amt:'−10%',name:'Skopje route',col:'#1565C0',bg:'#E8EFF9',icon:'✈️'},
+  {id:53,amt:'−10%',name:'Booking discount',col:'#06038D',bg:'#EAE7F6',icon:'📅'},
+  {id:54,amt:'−10%',name:'Duty-free onboard',col:'#D89A00',bg:'rgba(216,154,0,0.1)',icon:'🛍️'},
+  {id:55,amt:'−10%',name:'Sofia route',col:'#1565C0',bg:'#E8EFF9',icon:'✈️'},
+  {id:56,amt:'−10%',name:'Tuesday flights',col:'#C6007E',bg:'#FCE8F4',icon:'📆'},
+  {id:57,amt:'€10→€7',name:'Food voucher',col:'#D89A00',bg:'rgba(216,154,0,0.1)',icon:'🍽️'},
+  {id:58,amt:'−10%',name:'Partner discount',col:'#0A8A60',bg:'#E0F5ED',icon:'🤝'},
+  {id:59,amt:'−5%',name:'Early morning',col:'#06038D',bg:'#EAE7F6',icon:'🌅'},
+  {id:60,amt:'−5%',name:'Weekend departure',col:'#C6007E',bg:'#FCE8F4',icon:'📅'},
+];
+var packRandomCounts={starter:2,explorer:3,pro:6,family:4,backpacker:4,christmas:4};
+var themedVisaPools={
+  family:[
+    {id:100,amt:'Free',name:'Kids seat',col:'#D4600A',bg:'#FFF0E0',icon:'👶'},
+    {id:101,amt:'−30%',name:'Extra bag · 2 pax',col:'#D4600A',bg:'#FFF0E0',icon:'🧳'},
+    {id:102,amt:'−€20',name:'Family booking',col:'#D4600A',bg:'#FFF0E0',icon:'🎡'},
+    {id:103,amt:'Free',name:'Priority · family',col:'#D4600A',bg:'#FFF0E0',icon:'🚀'},
+    {id:104,amt:'−15%',name:'Hotel family room',col:'#D4600A',bg:'#FFF0E0',icon:'🏨'},
+    {id:105,amt:'Free',name:'Car seat rental',col:'#D4600A',bg:'#FFF0E0',icon:'🚗'},
+  ],
+  backpacker:[
+    {id:110,amt:'−40%',name:'Hostel stay',col:'#2A4DB0',bg:'#EBF0FF',icon:'🛏️'},
+    {id:111,amt:'Free',name:'Cabin bag upgrade',col:'#2A4DB0',bg:'#EBF0FF',icon:'🎒'},
+    {id:112,amt:'−€15',name:'Train pass add-on',col:'#2A4DB0',bg:'#EBF0FF',icon:'🚆'},
+    {id:113,amt:'−20%',name:'Travel insurance',col:'#2A4DB0',bg:'#EBF0FF',icon:'🛡️'},
+    {id:114,amt:'Free',name:'City bus pass',col:'#2A4DB0',bg:'#EBF0FF',icon:'🚌'},
+    {id:115,amt:'−€8',name:'Airport locker',col:'#2A4DB0',bg:'#EBF0FF',icon:'🔐'},
+  ],
+  christmas:[
+    {id:120,amt:'−25%',name:'Dec · Jan flights',col:'#1A7A42',bg:'#E8F9EE',icon:'✈️'},
+    {id:121,amt:'Free',name:'Gift wrap bag',col:'#1A7A42',bg:'#E8F9EE',icon:'🎁'},
+    {id:122,amt:'−€12',name:'Xmas market tour',col:'#1A7A42',bg:'#E8F9EE',icon:'🎠'},
+    {id:123,amt:'−30%',name:'Ski resort transfer',col:'#1A7A42',bg:'#E8F9EE',icon:'⛷️'},
+    {id:124,amt:'Free',name:'Hot drink voucher',col:'#1A7A42',bg:'#E8F9EE',icon:'☕'},
+    {id:125,amt:'−15%',name:'Winter hotel deal',col:'#1A7A42',bg:'#E8F9EE',icon:'🏔️'},
+  ]
+};
+
+function openPicker(n,packType){
+  pickerMax=n;
+  pendingRandomCount=packRandomCounts[packType]||4;
+  currentVisaPool=themedVisaPools[packType]||pickableVisas;
+  selected=[];
+  document.getElementById('p-sub').textContent='Select '+n+' visa'+(n>1?'s':'')+' you want';
+  document.getElementById('p-ctr').textContent='0/'+n;
+  document.getElementById('p-fill').style.width='0%';
+  document.getElementById('cbtn').disabled=true;
+  renderOpts();
+  document.getElementById('pw').className='pw show';
+}
+function closePicker(){document.getElementById('pw').className='pw';}
+function renderOpts(){
+  var h='';
+  currentVisaPool.forEach(function(v){
+    var s=selected.indexOf(v.id)>=0,lk=!s&&selected.length>=pickerMax;
+    h+='<div class="vo'+(s?' sel':'')+(lk?' lck':'')+'" onclick="toggleVisa('+v.id+')">';
+    h+='<div style="width:40px;height:40px;border-radius:11px;background:'+v.bg+';display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">'+v.icon+'</div>';
+    h+='<div style="flex:1"><div style="font-size:15px;font-weight:800;color:'+v.col+'">'+v.amt+'</div><div style="font-size:12px;font-weight:600;color:#555;margin-top:1px">'+v.name+'</div></div>';
+    h+='<div class="vo-chk'+(s?' on':'')+'">'+(s?'<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6l2.5 2.5 4.5-4.5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>':'')+'</div></div>';
+  });
+  document.getElementById('p-opts').innerHTML=h;
+}
+function toggleVisa(id){
+  var idx=selected.indexOf(id);
+  if(idx>=0){selected.splice(idx,1);}else{if(selected.length>=pickerMax)return;selected.push(id);}
+  var n=selected.length;
+  document.getElementById('p-ctr').textContent=n+'/'+pickerMax;
+  document.getElementById('p-fill').style.width=Math.round(n/pickerMax*100)+'%';
+  document.getElementById('cbtn').disabled=n<pickerMax;
+  renderOpts();
+}
+
+function confirmPick(){
+  closePicker();
+  var shuffled=randomVisas.slice().sort(function(){return Math.random()-.5;});
+  var randomCards=shuffled.slice(0,pendingRandomCount).map(function(v){return{visa:v,isRandom:true};});
+  launchEnvelope(randomCards);
+}
+
+function launchEnvelope(cards){
+  document.getElementById('env-flap').className='env-flap';
+  document.getElementById('env-seal').className='env-seal';
+  document.getElementById('env-stage').style.display='flex';
+  document.getElementById('env-stage').style.flexDirection='column';
+  document.getElementById('env-stage').style.alignItems='center';
+  document.getElementById('cards-stage').className='cards-stage';
+  document.getElementById('cards-done-btn').style.display='none';
+  document.getElementById('cards-more-btn').style.display='none';
+  window._pendingCards=cards;
+  window._revealedCount=0;
+  document.getElementById('env-overlay').className='env-overlay show';
+  setTimeout(function(){openEnvelope();},900);
+}
+
+function openEnvelope(){
+  var flap=document.getElementById('env-flap');
+  var seal=document.getElementById('env-seal');
+  if(flap.classList.contains('open'))return;
+  seal.classList.add('hidden');
+  flap.classList.add('open');
+  setTimeout(function(){
+    document.getElementById('env-stage').style.display='none';
+    buildCards(window._pendingCards);
+    document.getElementById('cards-stage').className='cards-stage show';
+    window._pendingCards.forEach(function(_,i){
+      setTimeout(function(){
+        var el=document.getElementById('cards-row').children[i];
+        if(el)flipCard(el,i);
+      },400+i*220);
+    });
+  },700);
+}
+
+function buildCards(cards){
+  var row=document.getElementById('cards-row');
+  row.innerHTML='';
+  cards.forEach(function(c,i){
+    var v=c.visa;var isR=c.isRandom;
+    var div=document.createElement('div');
+    div.className='reveal-card';
+    div.onclick=function(){flipCard(div,i);}
+    div.innerHTML='<div class="rc-inner" id="rc-'+i+'">'
+      +'<div class="rc-front"><div class="rc-front-logo">W<span class="wi">i</span></div></div>'
+      +'<div class="rc-back'+(isR?' random':'')+'">'
+      +'<div class="rc-back-icon" style="font-size:20px">'+v.icon+'</div>'
+      +'<div class="rc-back-amt" style="color:'+(isR?'#C6007E':v.col)+'">'+v.amt+'</div>'
+      +'<div class="rc-back-name">'+v.name+'</div>'
+      +'<div class="rc-back-tag" style="background:'+(isR?'#C6007E':'#06038D')+';color:#fff">'+(isR?'RANDOM':'YOUR PICK')+'</div>'
+      +'</div></div>';
+    row.appendChild(div);
+    div.style.opacity='0';div.style.transform='translateY(20px)';
+    setTimeout(function(){div.style.transition='opacity .3s,transform .3s';div.style.opacity='1';div.style.transform='translateY(0)';},i*60+50);
+  });
+}
+
+function flipCard(el,i){
+  var inner=document.getElementById('rc-'+i);
+  if(!inner||inner.classList.contains('flipped'))return;
+  inner.classList.add('flipped');
+  window._revealedCount=(window._revealedCount||0)+1;
+  var total=window._pendingCards?window._pendingCards.length:0;
+  if(window._revealedCount>=total){
+    setTimeout(function(){
+      document.getElementById('cards-done-btn').style.display='block';
+      document.getElementById('cards-more-btn').style.display='block';
+    },400);
+  }
+}
+
+function closeEnvOverlay(){
+  document.getElementById('env-overlay').className='env-overlay';
+  sw('visas');
+}
+</script>
